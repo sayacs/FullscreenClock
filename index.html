@@ -55,31 +55,35 @@
 
     <script>
         function updateClock() {
-            const now = new Date();
-
-            // 各个时区的时间偏移（相对于 UTC）
             const timeZones = {
-                "SG": { name: "Nasi Lemak", offset: 8 },
-                "JP-KR": { name: "Sushi / Kimchi", offset: 9 },
-                "VN-TH": { name: "Pho / Pad Thai", offset: 7 },
-                "ES": { name: "Paella", offset: 1 },
-                "US": { name: "Burger", offset: -8 } // PST: UTC-8, PDT: UTC-7
+                "SG": { name: "Nasi Lemak", tz: "Asia/Singapore" },
+                "JP-KR": { name: "Sushi / Kimchi", tz: "Asia/Tokyo" }, // 东京和首尔同一时区
+                "VN-TH": { name: "Pho / Pad Thai", tz: "Asia/Bangkok" }, // 曼谷和河内同一时区
+                "ES": { name: "Paella", tz: "Europe/Madrid" },
+                "US": { name: "Burger", tz: "America/Los_Angeles" } // 洛杉矶会自动适配 PST/PDT
             };
 
             Object.keys(timeZones).forEach(key => {
                 const tz = timeZones[key];
-                const localTime = new Date(now.getTime() + tz.offset * 3600 * 1000);
 
-                let hours = localTime.getUTCHours();
-                const minutes = String(localTime.getUTCMinutes()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12; // 转换为 12 小时制
+                // 获取指定时区的当前时间
+                const localTime = new Date().toLocaleString("en-US", { 
+                    timeZone: tz.tz,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                });
 
-                document.getElementById(`${key}-time`).textContent = `${hours}:${minutes} ${ampm}`;
+                // 获取指定时区的当前日期
+                const localDate = new Date().toLocaleString("en-US", { 
+                    timeZone: tz.tz,
+                    month: "short",
+                    day: "numeric"
+                });
 
-                // 短日期格式（Feb 27）
-                const options = { month: 'short', day: 'numeric' };
-                document.getElementById(`${key}-date`).textContent = new Intl.DateTimeFormat('en-US', options).format(localTime);
+                // 更新 HTML
+                document.getElementById(`${key}-time`).textContent = localTime;
+                document.getElementById(`${key}-date`).textContent = localDate;
             });
         }
 
