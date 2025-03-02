@@ -3,26 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fullscreen Clock</title>
+    <title>World Clock - Food Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-gray-300 flex flex-col justify-center items-center h-screen text-center font-mono">
-    <div id="quote" class="text-[4vw] text-green-400 mb-4"></div>
-    <div id="time" class="text-[24vw] font-bold">00:00</div>
-    <div id="date" class="text-[3vw] mt-2 text-purple-400">February 27, 2025, Tuesday</div>
+<body class="bg-black text-gray-300 flex flex-col justify-center items-center h-screen w-screen text-center font-mono p-4">
+    
+    <!-- 第一行：新加坡 / 马来西亚（左侧），日本 / 韩国 & 越南 / 泰国（右侧上下排列） -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-4">
+        <!-- Nasi Lemak 时间（左侧独占） -->
+        <div class="p-4 bg-gray-800 rounded-lg flex flex-col justify-center items-center">
+            <div class="text-green-400 text-[clamp(2vw,3vh,2rem)] md:text-[clamp(2vw,4vh,3rem)]">
+                Nasi Lemak <span id="SG-date" class="text-purple-400">Feb 27, Tue</span>
+            </div>
+            <div id="SG-time" class="font-bold text-[clamp(4vw,6vh,5rem)] md:text-[clamp(5vw,10vh,8rem)]">
+                00:00
+            </div>
+        </div>
+
+        <!-- 右侧：Sushi / Kimchi & Pho / Pad Thai 时间 -->
+        <div class="flex flex-col gap-4">
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <div class="text-green-400 text-[clamp(2vw,3vh,2rem)]">
+                    Sushi / Kimchi <span id="JP-KR-date" class="text-purple-400">Feb 27, Tue</span>
+                </div>
+                <div id="JP-KR-time" class="font-bold text-[clamp(4vw,6vh,5rem)]">00:00</div>
+            </div>
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <div class="text-green-400 text-[clamp(2vw,3vh,2rem)]">
+                    Pho / Pad Thai <span id="VN-TH-date" class="text-purple-400">Feb 27, Tue</span>
+                </div>
+                <div id="VN-TH-time" class="font-bold text-[clamp(4vw,6vh,5rem)]">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二行：Paella（西班牙） & Burger（美国） -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full px-4 mt-4">
+        <div class="p-4 bg-gray-800 rounded-lg">
+            <div class="text-green-400 text-[clamp(2vw,3vh,2rem)]">
+                Paella <span id="ES-date" class="text-purple-400">Feb 27, Tue</span>
+            </div>
+            <div id="ES-time" class="font-bold text-[clamp(4vw,6vh,5rem)]">00:00</div>
+        </div>
+        <div class="p-4 bg-gray-800 rounded-lg">
+            <div class="text-green-400 text-[clamp(2vw,3vh,2rem)]">
+                Burger <span id="US-date" class="text-purple-400">Feb 27, Tue</span>
+            </div>
+            <div id="US-time" class="font-bold text-[clamp(4vw,6vh,5rem)]">00:00</div>
+        </div>
+    </div>
 
     <script>
-
         function updateClock() {
             const now = new Date();
-            const hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('time').textContent = `${String(hours).padStart(2, '0')}:${minutes}`;
 
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            document.getElementById('date').textContent = new Intl.DateTimeFormat('en-US', options).format(now); 
+            // 各个时区的时间偏移（相对于 UTC）
+            const timeZones = {
+                "SG": { name: "Nasi Lemak", offset: 8 },
+                "JP-KR": { name: "Sushi / Kimchi", offset: 9 },
+                "VN-TH": { name: "Pho / Pad Thai", offset: 7 },
+                "ES": { name: "Paella", offset: 1 },
+                "US": { name: "Burger", offset: -8 } // PST: UTC-8, PDT: UTC-7
+            };
+
+            Object.keys(timeZones).forEach(key => {
+                const tz = timeZones[key];
+                const localTime = new Date(now.getTime() + tz.offset * 3600 * 1000);
+
+                const hours = String(localTime.getUTCHours()).padStart(2, '0');
+                const minutes = String(localTime.getUTCMinutes()).padStart(2, '0');
+                document.getElementById(`${key}-time`).textContent = `${hours}:${minutes}`;
+
+                // 短日期格式（Feb 27, Tue）
+                const options = { month: 'short', day: 'numeric', weekday: 'short' };
+                document.getElementById(`${key}-date`).textContent = new Intl.DateTimeFormat('en-US', options).format(localTime);
+            });
         }
-        setInterval(updateClock, 60000); // 改为每分钟更新一次
+
+        setInterval(updateClock, 60000); // 每分钟更新一次
         updateClock();
     </script>
 </body>
